@@ -3,6 +3,7 @@ package httparse
 import (
 	"bytes"
 	"fmt"
+	"strings"
 
 	"github.com/pingcap/errors"
 )
@@ -12,6 +13,8 @@ type Request struct {
 	Proto   []byte
 	URI     []byte
 	Headers map[string][][]byte
+	//for search header by lowcase ,sometime http header key is not normalizing
+	indexHeaders map[string]*[][]byte
 }
 
 //for debug
@@ -94,15 +97,33 @@ func (h *Request) parseHeaders(buf []byte) (int, error) {
 	for s.next() {
 		if h.Headers == nil {
 			h.Headers = make(map[string][][]byte)
+			h.indexHeaders = make(map[string]*[][]byte)
 		}
-		if v, found := h.Headers[b2s(s.key)]; found {
+		key := b2s(s.key)
+		if v, found := h.Headers[key]; found {
 			v = append(v, s.value)
+			h.indexHeaders[strings.ToLower(key)] = &v
 		} else {
-			h.Headers[b2s(s.key)] = [][]byte{s.value}
+			val := [][]byte{s.value}
+			h.indexHeaders[strings.ToLower(key)] = &val
+			h.Headers[key] = val
 		}
 	}
 	if s.err != nil {
 		return 0, errors.WithStack(s.err)
 	}
 	return s.hLen, nil
+}
+
+func (h *Request) GetHeader(key string) [][]byte {
+	if h.indexHeaders == nil {
+		return nil
+	}
+	if v, found := h.indexHeaders[strings.ToLower(key)]; found {
+		val := *v
+		if len(val) > 0 {
+			return val
+		}
+	}
+	return nil
 }
