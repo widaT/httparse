@@ -13,6 +13,12 @@ type Response struct {
 	Headers map[string][][]byte
 }
 
+func (r *Response) Reset() {
+	r.Proto = nil
+	r.StatusCode = 0
+	r.Headers = nil
+}
+
 //for debug
 func (r Response) String() string {
 	str := fmt.Sprintf("StatusCode:%d,Proto:%s\n", r.StatusCode, r.Proto)

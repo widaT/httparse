@@ -21,6 +21,11 @@ func NewRequst() *Request {
 	}
 }
 
+func (r *Request) Reset() {
+	r.Headers = nil
+	r.normalizeHeaderKey = true
+}
+
 //for debug
 func (r Request) String() string {
 	str := fmt.Sprintf("Method:%s,Proto:%s,URI:%s\n", r.Method, r.Proto, r.URI)
