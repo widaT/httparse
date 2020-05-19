@@ -62,7 +62,7 @@ func (h *Request) Parse(b []byte) (int, error) {
 
 	//parse httpversion
 	if len(b) < 10 {
-		return 0, errors.New("http version error")
+		return 0, errors.Errorf("parse http version error want len >10 got %d", len(b))
 	}
 
 	if err := checkVersion(b); err != nil {
