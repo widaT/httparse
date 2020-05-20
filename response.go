@@ -10,7 +10,8 @@ type Response struct {
 	Proto      []byte
 	StatusCode int
 	//Reason  []byte
-	Headers map[string][][]byte
+	Headers            map[string][][]byte
+	normalizeHeaderKey bool
 }
 
 func (r *Response) Reset() {
@@ -90,6 +91,9 @@ func (h *Response) parseHeaders(buf []byte) (int, error) {
 		if len(s.key) > 0 {
 			if h.Headers == nil {
 				h.Headers = make(map[string][][]byte)
+			}
+			if h.normalizeHeaderKey {
+				normalizeHeaderKey(s.key)
 			}
 			if v, found := h.Headers[b2s(s.key)]; found {
 				v = append(v, s.value)
