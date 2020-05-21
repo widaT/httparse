@@ -68,7 +68,7 @@ func (h *Response) Parse(b []byte) (int, error) {
 	}
 	h.StatusCode = hundreds*100 + tens*10 + ones
 
-	//ignore reason, read to the end of first line
+	//skip reason, read to the end of first line
 	length += 12
 	for i := 12; i < len(b); i++ {
 		length++
@@ -84,26 +84,8 @@ func (h *Response) Parse(b []byte) (int, error) {
 }
 
 func (h *Response) parseHeaders(buf []byte) (int, error) {
-	var s headerScanner
-	s.b = buf
-	var err error
-	for s.next() {
-		if len(s.key) > 0 {
-			if h.Headers == nil {
-				h.Headers = make(map[string][][]byte)
-			}
-			if h.normalizeHeaderKey {
-				normalizeHeaderKey(s.key)
-			}
-			if v, found := h.Headers[b2s(s.key)]; found {
-				v = append(v, s.value)
-			} else {
-				h.Headers[b2s(s.key)] = [][]byte{s.value}
-			}
-		}
+	if h.Headers == nil {
+		h.Headers = make(map[string][][]byte)
 	}
-	if s.err != nil {
-		return 0, errors.WithStack(err)
-	}
-	return len(buf) - len(s.b), nil
+	return parseHeaders(buf, h.Headers, h.normalizeHeaderKey)
 }
