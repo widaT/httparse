@@ -115,13 +115,13 @@ func (h *Request) parseHeaders(buf []byte) (int, error) {
 	return parseHeaders(buf, h.Headers, h.normalizeHeaderKey)
 }
 
-func (h *Request) GetHeader(key string) [][]byte {
+func (h *Request) GetHeader(key string) []byte {
 	if h.Headers == nil {
 		return nil
 	}
 	if v, found := h.Headers[key]; found {
 		if len(v) > 0 {
-			return v
+			return v[0]
 		}
 	}
 	return nil
