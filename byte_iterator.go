@@ -1,6 +1,31 @@
 package httparse
 
-import "github.com/pingcap/errors"
+import (
+	"github.com/pingcap/errors"
+)
+
+var HeaderNameMap [256]uint8 = [256]uint8{
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+}
+
+func isHeaderNameToken(b uint8) bool {
+	return HeaderNameMap[b] != 0
+}
 
 type ByteIter struct {
 	data []byte
@@ -24,7 +49,9 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 		case '\n':
 			return count + iter.pos, nil
 		default:
-
+			if !isHeaderNameToken(iter.v) {
+				return 0, errors.New("header name error")
+			}
 			var headerName string
 			var value []byte
 		key:
@@ -37,20 +64,25 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 					}
 					headerName = b2s(keyData)
 					break key
+				} else if !isHeaderNameToken(iter.v) {
+					return 0, errors.New("header name error")
 				}
 			}
 		whitespace:
 			for iter.next() {
 				if iter.v == ' ' || iter.v == '\t' {
-					count++
+					count += iter.pos
 					//move
 					iter.skip(0)
 					continue whitespace
 				} else {
+					//unread 1
+					iter.unRead(1)
 					break whitespace
 				}
 			}
 
+		headerValue:
 			for iter.next() {
 				switch iter.v {
 				case '\r':
@@ -59,9 +91,11 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 					}
 					count += iter.pos
 					value = iter.skip(2)
+					break headerValue
 				case '\n':
 					count += iter.pos
 					value = iter.skip(1)
+					break headerValue
 				}
 			}
 
@@ -90,6 +124,12 @@ func (iter *ByteIter) next() bool {
 		return true
 	}
 	return false
+}
+
+func (iter *ByteIter) unRead(n int) {
+	if iter.pos >= n {
+		iter.pos -= n
+	}
 }
 
 func (iter *ByteIter) skip(skip int) (b []byte) {
