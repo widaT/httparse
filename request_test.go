@@ -62,12 +62,12 @@ func TestParse(t *testing.T) {
 	}
 
 	v := r.GetHeader("Host")
-	if len(v) == 0 || !bytes.Equal(v[0], []byte("foo.com")) {
+	if len(v) == 0 || !bytes.Equal(v, []byte("foo.com")) {
 		t.Errorf("read host err %s -- %#v", v[0], r.Headers)
 	}
 
 	v = r.GetHeader("Cookie")
-	if len(v) == 0 || !bytes.Equal(v[0], []byte("")) {
+	if len(v) == 0 || !bytes.Equal(v, []byte("")) {
 		t.Errorf("read cookie err %d", v[0])
 	}
 }
