@@ -88,7 +88,9 @@ func (h *Request) Parse(b []byte) (int, error) {
 }
 
 func (r *Request) DelHeader(key string) {
-	delete(r.Headers, key)
+	if r.Headers != nil {
+		r.Headers.Del(key)
+	}
 }
 
 func checkVersion(b []byte) error {
@@ -110,16 +112,29 @@ func isToken(b uint8) bool {
 
 func (h *Request) parseHeaders(buf []byte) (int, error) {
 	if h.Headers == nil {
-		h.Headers = make(map[string][][]byte)
+		h.Headers = make(Header)
 	}
 	return parseHeaders(buf, h.Headers, h.normalizeHeaderKey)
 }
 
 func (h *Request) GetHeader(key string) []byte {
-	if h.Headers == nil {
-		return nil
-	}
 	return h.Headers.Get(key)
+}
+
+func (h *Request) SetHeader(key string, val []byte) {
+	if h.Headers == nil {
+		h.Headers = make(Header)
+	}
+
+	h.Headers.Set(key, val)
+}
+
+func (h *Request) AddHeader(key string, val []byte) {
+	if h.Headers == nil {
+		h.Headers = make(Header)
+	}
+
+	h.Headers.Add(key, val)
 }
 
 //code from fasthttp

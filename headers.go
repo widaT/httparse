@@ -16,9 +16,9 @@ func (h Header) Get(key string) []byte {
 	}
 	v := h[key]
 	if len(v) == 0 {
+		return nil
 	}
 	return v[0]
-	return nil
 }
 
 func (h Header) Values(key string) [][]byte {

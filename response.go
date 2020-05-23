@@ -85,14 +85,27 @@ func (h *Response) Parse(b []byte) (int, error) {
 
 func (h *Response) parseHeaders(buf []byte) (int, error) {
 	if h.Headers == nil {
-		h.Headers = make(map[string][][]byte)
+		h.Headers = make(Header)
 	}
 	return parseHeaders(buf, h.Headers, h.normalizeHeaderKey)
 }
 
 func (h *Response) GetHeader(key string) []byte {
-	if h.Headers == nil {
-		return nil
-	}
 	return h.Headers.Get(key)
+}
+
+func (h *Response) SetHeader(key string, val []byte) {
+	if h.Headers == nil {
+		h.Headers = make(Header)
+	}
+
+	h.Headers.Set(key, val)
+}
+
+func (h *Response) AddHeader(key string, val []byte) {
+	if h.Headers == nil {
+		h.Headers = make(Header)
+	}
+
+	h.Headers.Add(key, val)
 }
