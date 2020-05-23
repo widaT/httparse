@@ -11,7 +11,7 @@ type Request struct {
 	Method             []byte
 	Proto              []byte
 	URI                []byte
-	Headers            map[string][][]byte
+	Headers            Header
 	normalizeHeaderKey bool
 }
 
@@ -119,12 +119,7 @@ func (h *Request) GetHeader(key string) []byte {
 	if h.Headers == nil {
 		return nil
 	}
-	if v, found := h.Headers[key]; found {
-		if len(v) > 0 {
-			return v[0]
-		}
-	}
-	return nil
+	return h.Headers.Get(key)
 }
 
 //code from fasthttp

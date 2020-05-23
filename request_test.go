@@ -61,13 +61,13 @@ func TestParse(t *testing.T) {
 		t.Errorf("Headers expect 2 got %d", len(r.Headers))
 	}
 
-	v := r.GetHeader("Host")
+	v := r.Headers.Get("Host")
 	if len(v) == 0 || !bytes.Equal(v, []byte("foo.com")) {
-		t.Errorf("read host err %s -- %#v", v[0], r.Headers)
+		t.Errorf("read host err %s -- %#v", v, r.Headers)
 	}
 
-	v = r.GetHeader("Cookie")
-	if len(v) == 0 || !bytes.Equal(v, []byte("")) {
-		t.Errorf("read cookie err %d", v[0])
+	v = r.Headers.Get("Cookie")
+	if !bytes.Equal(v, []byte("")) {
+		t.Errorf("read cookie err %d", v)
 	}
 }

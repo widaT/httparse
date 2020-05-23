@@ -10,7 +10,7 @@ type Response struct {
 	Proto      []byte
 	StatusCode int
 	//Reason  []byte
-	Headers            map[string][][]byte
+	Headers            Header
 	normalizeHeaderKey bool
 }
 
@@ -88,4 +88,11 @@ func (h *Response) parseHeaders(buf []byte) (int, error) {
 		h.Headers = make(map[string][][]byte)
 	}
 	return parseHeaders(buf, h.Headers, h.normalizeHeaderKey)
+}
+
+func (h *Response) GetHeader(key string) []byte {
+	if h.Headers == nil {
+		return nil
+	}
+	return h.Headers.Get(key)
 }
