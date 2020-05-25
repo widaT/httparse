@@ -88,9 +88,7 @@ func (h *Request) Parse(b []byte) (int, error) {
 }
 
 func (r *Request) DelHeader(key string) {
-	if r.Headers != nil {
-		r.Headers.Del(key)
-	}
+	r.Headers.Del(key)
 }
 
 func checkVersion(b []byte) error {
@@ -125,7 +123,6 @@ func (h *Request) SetHeader(key string, val []byte) {
 	if h.Headers == nil {
 		h.Headers = make(Header)
 	}
-
 	h.Headers.Set(key, val)
 }
 
@@ -133,7 +130,6 @@ func (h *Request) AddHeader(key string, val []byte) {
 	if h.Headers == nil {
 		h.Headers = make(Header)
 	}
-
 	h.Headers.Add(key, val)
 }
 
