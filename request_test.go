@@ -71,3 +71,11 @@ func TestParse(t *testing.T) {
 		t.Errorf("read cookie err %d", v)
 	}
 }
+
+func TestToUpperTable(t *testing.T) {
+
+	s := "AcdDSS"
+
+	t.Errorf("----%s\n", []byte{toLowerTable(s[4])})
+	t.Errorf("----%s\n", []byte{toUpperTable(s[0])})
+}
