@@ -43,15 +43,16 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (cou
 		}
 		switch iter.v {
 		case '\r':
-			if err = iter.next(); err != nil {
+			if err = iter.next(); err == nil {
 				if iter.v != '\n' {
 					return 0, errors.New("newline error")
 				}
-				return count + iter.pos, nil
+				count += iter.pos
 			}
 			return
 		case '\n':
-			return count + iter.pos, nil
+			count += iter.pos
+			return
 		default:
 			if !isHeaderNameToken(iter.v) {
 				return 0, errors.New("header name error")
