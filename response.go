@@ -32,7 +32,7 @@ func (r Response) String() string {
 
 func (h *Response) Parse(b []byte) (int, error) {
 	if len(b) < 12 {
-		return 0, errors.New("to short")
+		return 0, StatusPartial
 	}
 
 	length := 0

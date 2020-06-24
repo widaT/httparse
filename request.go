@@ -67,7 +67,7 @@ func (h *Request) Parse(b []byte) (int, error) {
 
 	//parse httpversion
 	if len(b) < 10 {
-		return 0, errors.Errorf("parse http version error want len >10 got %d", len(b))
+		return 0, StatusPartial
 	}
 
 	if err := checkVersion(b); err != nil {
@@ -92,9 +92,6 @@ func (r *Request) DelHeader(key string) {
 }
 
 func checkVersion(b []byte) error {
-	if len(b) < 8 {
-		return errors.New("too short")
-	}
 	if bytes.Compare(b[:7], []byte("HTTP/1.")) != 0 {
 		return errors.New("unsport http version")
 	}

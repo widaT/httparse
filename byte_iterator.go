@@ -34,18 +34,22 @@ type ByteIter struct {
 	v    uint8
 }
 
-func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int, error) {
+func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (count int, err error) {
 	iter := NewByteIter(b)
-	count := 0
-	for iter.next() {
+	for {
+		err = iter.next()
+		if err != nil {
+			return
+		}
 		switch iter.v {
 		case '\r':
-			if iter.next() {
+			if err = iter.next(); err != nil {
 				if iter.v != '\n' {
 					return 0, errors.New("newline error")
 				}
 				return count + iter.pos, nil
 			}
+			return
 		case '\n':
 			return count + iter.pos, nil
 		default:
@@ -55,7 +59,11 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 			var headerName string
 			var value []byte
 		key:
-			for iter.next() {
+			for {
+				err = iter.next()
+				if err != nil {
+					return
+				}
 				if iter.v == ':' {
 					count += iter.pos
 					keyData := iter.skip(1)
@@ -69,7 +77,11 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 				}
 			}
 		whitespace:
-			for iter.next() {
+			for {
+				err = iter.next()
+				if err != nil {
+					return
+				}
 				if iter.v == ' ' || iter.v == '\t' {
 					count += iter.pos
 					//move
@@ -83,10 +95,15 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 			}
 
 		headerValue:
-			for iter.next() {
+			for {
+				err = iter.next()
+				if err != nil {
+					return
+				}
+
 				switch iter.v {
 				case '\r':
-					if !iter.next() || iter.v != '\n' {
+					if iter.next() != nil || iter.v != '\n' {
 						return 0, errors.New("got header value newline error")
 					}
 					count += iter.pos
@@ -105,9 +122,7 @@ func parseHeaders(b []byte, headers map[string][][]byte, normalizeKey bool) (int
 				headers[headerName] = [][]byte{value}
 			}
 		}
-
 	}
-	return count, nil
 }
 
 func NewByteIter(b []byte) *ByteIter {
@@ -117,13 +132,13 @@ func NewByteIter(b []byte) *ByteIter {
 	}
 }
 
-func (iter *ByteIter) next() bool {
+func (iter *ByteIter) next() error {
 	if iter.pos < iter.len {
 		iter.v = iter.data[iter.pos]
 		iter.pos++
-		return true
+		return nil
 	}
-	return false
+	return StatusPartial
 }
 
 func (iter *ByteIter) unRead(n int) {
