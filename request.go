@@ -22,6 +22,9 @@ func NewRequst() *Request {
 }
 
 func (r *Request) Reset() {
+	r.Method = nil
+	r.Proto = nil
+	r.URI = nil
 	r.Headers = nil
 	r.normalizeHeaderKey = true
 }

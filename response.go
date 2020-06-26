@@ -18,6 +18,7 @@ func (r *Response) Reset() {
 	r.Proto = nil
 	r.StatusCode = 0
 	r.Headers = nil
+	r.normalizeHeaderKey = true
 }
 
 //for debug
